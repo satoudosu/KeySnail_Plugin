@@ -2,7 +2,7 @@ var PLUGIN_INFO =
 <KeySnailPlugin>
     <name>dlbsnail</name>
     <description>Work with Download Statusbar</description>
-    <version>0.1</version>
+    <version>0.1.1</version>
     <updateURL>http://github.com/satoudosu/KeySnail_Plugin/raw/master/dlbsnail.ks.js</updateURL>
     <author>satoudosu</author>
     <license document="http://www.opensource.org/licenses/mit-license.php">The MIT License</license>
@@ -21,15 +21,59 @@ var PLUGIN_INFO =
     <ext>dlbsnail-open-preference</ext>
     <ext>dlbsnail-open-history</ext>
     </provides>
-    <detail><![CDATA[
-=== Usage ===
-Nothing.
-    ]]></detail>
     <detail lang="ja"><![CDATA[
 === 使い方 ===
-なし。
+
+Download Statusbar https://addons.mozilla.org/ja/firefox/addon/download-statusbar/ のインストールがされていると，ダウンロードされたアイテムの操作(現段階では主に開くのみ)が可能になります．
+
+次のようにして任意のキーへコマンドを割り当てておくことも可能です．
+
+>|javascript|
+key.setViewKey('d', function (ev, arg) {
+    ext.exec("dlbsnail-show-file-list", arg, ev);
+}, 'Show Download Statusbar Items', true);
+||<
+
+上記のようなコードを .keysnail.js へ記述しておくことにより，ブラウズ画面において d キーを押すことでダウンロードしたアイテムの状態・ファイル名・ソースを表示するプロンプトが立ち上がります．状態が "finished" のファイルを選択することで開くことができます．
+
+またダウンロードしたファイルを一括に操作で操作するコマンドも用意しました．具体的にはそれぞれの操作が実行可能なファイルに対して，ステータスバーからの削除・一時停止・再開・キャンセル・開くことができます．それぞれのコマンドを任意のキーに割り当てることも可能です．
+
+>|javascript|
+key.setViewKey('D', function (ev, arg) {
+    ext.exec("dlbsnail-show-command-for-all", arg, ev);
+}, 'dlbasnail-all系コマンド', true);
+||<
+
+また上記の設定を行うことで，ブラウズ画面において D キーを押すことで実行可能な全体操作を一覧で表示し，選択することで実行することもできます．
+
+=== TODO ===
+やる気の問題もあるので実現するかはわかりませんが，やるとしたら以下のことに取り組む予定です．
+
+1. 個別ファイルに対して開く以外の操作(キャンセル・再開・キャンセル・削除等)ができるようにする
+
+2. ダウンロード中のファイルに対して状態を%表示する
+
+3. ファイルアイコンの追加
+
+4. 逐次的な更新(promptの仕様上無理な気がしている)
+
+5. プラグインのアイコンの作成
+	
     ]]></detail>
 </KeySnailPlugin>;
+
+
+// ChangeLog
+// 
+// ==== 0.1.1(2011/03/18) ====
+// 
+// * add detail
+// 
+// ==== 0.1.0(2011/03/18) ====
+// 
+// * First release
+// 
+
 
 // Options {{ =============================================================== //
 let pOptions = plugins.setupOptions("dlbsnail", {
