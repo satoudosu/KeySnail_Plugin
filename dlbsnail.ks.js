@@ -2,7 +2,7 @@ var PLUGIN_INFO =
 <KeySnailPlugin>
     <name>dlbsnail</name>
     <description>Work with Download Statusbar</description>
-    <version>0.2</version>
+    <version>0.2.1</version>
     <updateURL>http://github.com/satoudosu/KeySnail_Plugin/raw/master/dlbsnail.ks.js</updateURL>
     <author>satoudosu</author>
     <license document="http://www.opensource.org/licenses/mit-license.php">The MIT License</license>
@@ -66,6 +66,20 @@ plugins.options["dlbsnail.file_key_map"] = {
 };
 ||<
 
+また mooz さんの公開している Dark Theme (https://github.com/mooz/keysnail/raw/master/plugins/_dark-theme.ks.js)をお使いの方は以下のように設定してみて，ここからお好みのスタイルに変更するといいかもしれません．
+
+>|javascript|
+plugins.options["dlbsnail.finished_style"]	 = "color:#7ad3f2";
+plugins.options["dlbsnail.in progress_style"]	 = "color:#33ff33";
+plugins.options["dlbsnail.paused_style"]	 = "color:red";
+plugins.options["dlbsnail.default_style"]	 = "";
+plugins.options["dlbsnail.name_style"]		 = "";
+plugins.options["dlbsnail.source_style"]	 = style.prompt.url;
+plugins.options["dlbsnail.command_style"]	 = "color:#7ad3f2;font-weight:bold";
+plugins.options["dlbsnail.file_style"]		 = "font-weight:bold";
+plugins.options["dlbsnail.description_style"]	 = "";
+||<
+
 === 注意 ===
 
 上記の設定では削除(delete-this-file)やキャンセル(cancel-this-file)などの不可逆的な操作に関してはコメントアウトしてあります．誤使用の恐れがあるからです．これらの機能で生じたいかなる事故に対して責任は負いかねますので，その覚悟のある方は適宣コメントアウトを外してください．
@@ -86,6 +100,10 @@ key.setViewKey('D', function (ev, arg) {
 </KeySnailPlugin>;
 
 // ChangeLog
+// ==== 0.2.1(2011/03/19) ====
+// 
+// * fixed default style
+// 
 // ==== 0.2(2011/03/19) ====
 // 
 // * add various features
@@ -113,13 +131,13 @@ key.setViewKey('D', function (ev, arg) {
 
 // Options {{ =============================================================== //
 let pOptions = plugins.setupOptions("dlbsnail", {    
-    "finished_style"	: { preset: "color:#7ad3f2;" },
-    "in progress_style" : { preset: "color:#33ff33;" },
-    "paused_style"	: { preset: "color:red;" },
+    "finished_style"	: { preset: "color:black;" },
+    "in progress_style" : { preset: "color:black;" },
+    "paused_style"	: { preset: "color:black;" },
     "default_style"	: { preset: "" },    
     "name_style"	: { preset: "" },
     "source_style"	: { preset: style.prompt.url },
-    "command_style"	: { preset: "color:#7ad3f2;font-weight:bold;", },
+    "command_style"	: { preset: "font-weight:bold;", },
     "file_style"	: { preset: "font-weight:bold;" },
     "description_style" : { preset: "" },
     "interval"          : {
