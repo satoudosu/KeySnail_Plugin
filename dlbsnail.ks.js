@@ -66,7 +66,7 @@ plugins.options["dlbsnail.file_key_map"] = {
 };
 ||<
 
-また mooz さんの公開している Dark Theme (https://github.com/mooz/keysnail/raw/master/plugins/_dark-theme.ks.js)をお使いの方は以下のように設定してみて，ここからお好みのスタイルに変更するといいかもしれません．
+また mooz さんの公開している Dark Theme ( https://github.com/mooz/keysnail/raw/master/plugins/_dark-theme.ks.js )をお使いの方は以下のように設定してみて，ここからお好みのスタイルに変更するといいかもしれません．
 
 >|javascript|
 plugins.options["dlbsnail.finished_style"]	 = "color:#7ad3f2";
