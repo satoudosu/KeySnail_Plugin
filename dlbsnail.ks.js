@@ -2,7 +2,7 @@ var PLUGIN_INFO =
 <KeySnailPlugin>
     <name>dlbsnail</name>
     <description>Work with Download Statusbar</description>
-    <version>0.1.1</version>
+    <version>0.2</version>
     <updateURL>http://github.com/satoudosu/KeySnail_Plugin/raw/master/dlbsnail.ks.js</updateURL>
     <author>satoudosu</author>
     <license document="http://www.opensource.org/licenses/mit-license.php">The MIT License</license>
@@ -24,7 +24,7 @@ var PLUGIN_INFO =
     <detail lang="ja"><![CDATA[
 === 使い方 ===
 
-Download Statusbar https://addons.mozilla.org/ja/firefox/addon/download-statusbar/ のインストールがされていると，ダウンロードされたアイテムの操作(現段階では主に開くのみ)が可能になります．
+Download Statusbar https://addons.mozilla.org/ja/firefox/addon/download-statusbar/ のインストールがされていると，ダウンロードされたアイテムの操作が可能になります．
 
 次のようにして任意のキーへコマンドを割り当てておくことも可能です．
 
@@ -34,9 +34,45 @@ key.setViewKey('d', function (ev, arg) {
 }, 'Show Download Statusbar Items', true);
 ||<
 
-上記のようなコードを .keysnail.js へ記述しておくことにより，ブラウズ画面において d キーを押すことでダウンロードしたアイテムの状態・ファイル名・ソースを表示するプロンプトが立ち上がります．状態が "finished" のファイルを選択することで開くことができます．
+上記のようなコードを .keysnail.js へ記述しておくことにより，ブラウズ画面において d キーを押すことでダウンロードしたアイテムの状態・ダウンロード進行状況・ファイル名・ソースを表示するプロンプトが立ち上がります．状態が "finished" のファイルを選択することで開くことができます．またそれ以外にもリネーム・URLのコピー・ステータスバーからの削除などができます．以下のようなコードを PRESERVE エリアへ貼り付けることでそれらの機能をキーに対応させることができます．
 
-またダウンロードしたファイルを一括に操作で操作するコマンドも用意しました．具体的にはそれぞれの操作が実行可能なファイルに対して，ステータスバーからの削除・一時停止・再開・キャンセル・開くことができます．それぞれのコマンドを任意のキーに割り当てることも可能です．
+>|javascript|
+plugins.options["dlbsnail.file_key_map"] = {
+    "C-z"   : "prompt-toggle-edit-mode",
+    "SPC"   : "prompt-next-page",
+    "b"     : "prompt-previous-page",
+    "j"     : "prompt-next-completion",
+    "k"     : "prompt-previous-completion",
+    "g"     : "prompt-beginning-of-candidates",
+    "G"     : "prompt-end-of-candidates",
+    "q"     : "prompt-cancel",
+    // for finished file
+    "o"     : "open-this-file",
+    "O"     : "show-this-file",
+    "R"     : "rename-this-file",
+    // "C-D"   : "delete-this-file",
+    "C"     : "clear-this-file",
+    // for in progress or pause file
+    // "C-C"   : "cancel-this-file",
+    // for in progress file
+    // "C-P"   : "pause-this-file",
+    // for pause file
+    "r"     : "resume-this-file",
+    // for all file
+    "c"     : "copy-url",
+    "V"     : "visit-ref-website",
+    "u"     : "undo-clear",
+    "h"     : "refresh-file-list"
+};
+||<
+
+=== 注意 ===
+
+上記の設定では削除(delete-this-file)やキャンセル(cancel-this-file)などの不可逆的な操作に関してはコメントアウトしてあります．誤使用の恐れがあるからです．これらの機能で生じたいかなる事故に対して責任は負いかねますので，その覚悟のある方は適宣コメントアウトを外してください．
+
+=== 一括操作 ===
+
+ダウンロードしたファイルを一括に操作で操作するコマンドも用意しました．具体的にはそれぞれの操作が実行可能なファイルに対して，ステータスバーからの削除・一時停止・再開・キャンセル・開くことができます．それぞれのコマンドを任意のキーに割り当てることも可能です．上記の通りキャンセルは不可逆的な操作なので十分注意して使用してください．
 
 >|javascript|
 key.setViewKey('D', function (ev, arg) {
@@ -44,26 +80,15 @@ key.setViewKey('D', function (ev, arg) {
 }, 'dlbasnail-all系コマンド', true);
 ||<
 
-また上記の設定を行うことで，ブラウズ画面において D キーを押すことで実行可能な全体操作を一覧で表示し，選択することで実行することもできます．
-
-=== TODO ===
-やる気の問題もあるので実現するかはわかりませんが，やるとしたら以下のことに取り組む予定です．
-
-1. 個別ファイルに対して開く以外の操作(キャンセル・再開・キャンセル・削除等)ができるようにする
-
-2. ダウンロード中のファイルに対して状態を%表示する
-
-3. ファイルアイコンの追加
-
-4. 逐次的な更新(promptの仕様上無理な気がしている)
-
-5. プラグインのアイコンの作成
+また上記の設定を行うことで，ブラウズ画面において D キーを押すことで実行可能な全体操作を一覧で表示し，選択することで実行することもできます．       
 	
     ]]></detail>
 </KeySnailPlugin>;
 
-
 // ChangeLog
+// ==== 0.2(2011/03/19) ====
+// 
+// * add various features
 // 
 // ==== 0.1.1(2011/03/18) ====
 // 
@@ -74,52 +99,70 @@ key.setViewKey('D', function (ev, arg) {
 // * First release
 // 
 
+// TODO
+// 
+// 1. 個別ファイルに対して開く以外の操作(キャンセル・再開・キャンセル・削除等)ができるようにする -> 対応しました
+// 
+// 2. ダウンロード中のファイルに対して状態を%表示する -> 対応しました
+// 
+// 3. ファイルアイコンの追加 -> 対応しました
+// 
+// 4. 逐次的な更新(promptの仕様上無理な気がする) -> 力づくで対応しました
+// 
+// 5. プラグインのアイコンの作成
 
 // Options {{ =============================================================== //
-let pOptions = plugins.setupOptions("dlbsnail", {
-    /*
-    "finished_style" : {	
-        preset: "color:#7ad3f2;font-weight:bold;",
-	description: "finished state style"
+let pOptions = plugins.setupOptions("dlbsnail", {    
+    "finished_style"	: { preset: "color:#7ad3f2;" },
+    "in progress_style" : { preset: "color:#33ff33;" },
+    "paused_style"	: { preset: "color:red;" },
+    "default_style"	: { preset: "" },    
+    "name_style"	: { preset: "" },
+    "source_style"	: { preset: style.prompt.url },
+    "command_style"	: { preset: "color:#7ad3f2;font-weight:bold;", },
+    "file_style"	: { preset: "font-weight:bold;" },
+    "description_style" : { preset: "" },
+    "interval"          : {
+	preset : 1*1*1000, // 1 seconds
+	description: M({
+	    ja: "更新間隔",
+	    en: "Interval between updates"
+	})
     },
-    "in progress_style" : {
-	preset: "color:#33ff33;font-weight:bold;",
-	description: "in progress state style"
+    "file_key_map"      : {
+	preset: {
+            "C-z"   : "prompt-toggle-edit-mode",
+            "SPC"   : "prompt-next-page",
+            "b"     : "prompt-previous-page",
+            "j"     : "prompt-next-completion",
+            "k"     : "prompt-previous-completion",
+            "g"     : "prompt-beginning-of-candidates",
+            "G"     : "prompt-end-of-candidates",
+            "q"     : "prompt-cancel",
+	    // for finished file
+	    "o"     : "open-this-file",
+	    "O"     : "show-this-file",
+	    "R"     : "rename-this-file",
+	    // "C-D"   : "delete-this-file",
+	    "C"     : "clear-this-file",
+	    // for in progress or pause file
+	    // "C-C"   : "cancel-this-file",
+	    // for in progress file
+	    // "C-P"   : "pause-this-file",
+	    // for pause file
+	    "r"     : "resume-this-file",
+	    // for all file
+	    "c"     : "copy-url",
+	    "V"     : "visit-ref-website",
+	    "u"     : "undo-clear",
+	    "h"     : "refresh-file-list"
+	},
+	description: M({
+	    ja: "個別操作用キーマップ",
+	    en: "Local keymap for manipulation in single file list"
+	})
     },
-    "paused_style" : {
-	preset: "color:red;font-weight:bold;",
-	description: "paused state style"
-    },
-    "default_style" : {
-	preset: "font-weight:bold;",
-	description: "default style"
-    },
-     */
-    "state_style" : {
-	preset: "color:#7ad3f2;font-weight:bold;",
-	description: "state style"
-    },
-    "name_style" : {
-	preset: "",
-	description: "name style"
-    },
-    "source_style" : {
-	preset: style.prompt.url,
-	description: "source style"
-    },
-    "command_style" : {
-	preset: "color:#7ad3f2;font-weight:bold;",
-	descriptioin: "command style"
-    },
-    "file_style" : {
-	preset: "font-weight:bold;",
-	description: "file num style"	
-    },
-    "description_style" : {
-	preset: "",
-	description: "description style"
-    },
-    "key_map": {
+    "action_key_map"     : {
 	preset: {
             "C-z"   : "prompt-toggle-edit-mode",
             "SPC"   : "prompt-next-page",
@@ -131,8 +174,8 @@ let pOptions = plugins.setupOptions("dlbsnail", {
             "q"     : "prompt-cancel"
 	},
 	description: M({
-	    ja: "個別操作用キーマップ",
-	    en: "Local keymap for manipulation in single file list"
+	    ja: "全体アクション用キーマップ",
+	    en: "Local keymap for manipulation for all file"
 	})
     }
 }, PLUGIN_INFO);
@@ -151,7 +194,7 @@ var allActions = [
     [function () {
 	_dlbar_clearAll();
 	display.echoStatusBar("claer all", 2000);
-    }, "Clear all finished items",
+    }, "Clear all finished items from statusbar",
      "allClear", ["1"]],
 
     [function () {
@@ -167,7 +210,7 @@ var allActions = [
      "allResume", ["4"]],
 
     [function () {
-	_dlbar_cancelAll();	
+	_dlbar_cancelAll();
 	display.echoStatusBar("cancel all", 2000);
     }, "Cancel all items which are in progress or pause",
      "allCancel", ["0", "4"]],
@@ -176,7 +219,7 @@ var allActions = [
 	allOpen();	
 	display.echoStatusBar("open all", 2000);
     }, "Open all items which are finished",
-     "allOpen", ["1"]],
+     "allOpen", ["1"]]
 ];
 
 function getDownbarelem() {
@@ -234,42 +277,179 @@ function showFileList() {
 
     var collectList = [];
     for(var i=0; i<fileList.length; i++) {
-	var dlElem = document.getElementById(fileList[i].id);
+	var id = fileList[i].id;
+	var dlElem = document.getElementById(id);
+	var aDownload = _dlbar_gDownloadManager.getDownload(id.substring(3));
 	
 	var file = dlElem.getAttribute("name");
 	var source = dlElem.getAttribute("source");
 	var state = getState(dlElem.getAttribute("state"));
+	var currpercent = aDownload.percentComplete + " %";
 
-	collectList.push([state, file, source]);
+	const kExternalHelperAppServContractID = "@mozilla.org/uriloader/external-helper-app-service;1";	
+	var mimeService = Components.classes[kExternalHelperAppServContractID].getService(Components.interfaces.nsIMIMEService);
+	var contentType = mimeService.getTypeFromFile(aDownload.targetFile);
+	var iconURL = "moz-icon:" + dlElem.getAttribute("target") + "?size=32&contentType=" + contentType;
+
+	collectList.push([state, currpercent, iconURL, file, source, id]);
     }
+
+    var refresher = window.setInterval(function() {
+	var repeatFlag = false;
+	for(var i=0; i<collectList.length; i++) {
+	    if(collectList[i][0] != "finished") {
+		repeatFlag = true;
+
+		var newPercent = _dlbar_gDownloadManager.getDownload(collectList[i][5].substring(3)).percentComplete;
+		collectList[i][1] = newPercent + " %";
+
+		if(newPercent == 100)
+		    collectList[i][0] = "finished";
+	    }
+	}
+
+	if(!repeatFlag) {
+	    window.clearInterval(refresher);
+	    return;
+	}
+
+	prompt.refresh();
+	
+    }, pOptions["interval"]);
 
     prompt.selector(
 	{
 	    message : "downloaded items",
 	    acyclic : false,
 	    collection : collectList,
-	    header : ["State", "File Name", "Source"],
-	    style : [pOptions["state_style"], pOptions["name_style"], pOptions["source_style"]],
-	    width : [10, 60, 30],
-	    keymap: pOptions["key_map"],
-	    /*
+	    flags : [0, 0, ICON | IGNORE, 0, 0, HIDDEN],
+	    header : ["State", "Percent", "File Name", "Source"],
+	    style : ["", "", pOptions["name_style"], pOptions["source_style"]],
+	    width : [10, 10, 50,  30],
+	    keymap: pOptions["file_key_map"],
+	    actions: [
+		[function (aIndex) {
+		    if(collectList[aIndex][0] == "finished") {
+			_dlbar_startOpenFinished(collectList[aIndex][5]);
+			prompt.finish();
+		    }
+		},		 
+		 M({ja: "このファイルを開く",
+		    en:"Open this file"}),
+		 "open-this-file,c"],
+		[function (aIndex) {
+		    if(collectList[aIndex][0] == "finished") {
+			_dlbar_startShowFile(collectList[aIndex][5]);
+			_dlbar_clearAnimate(collectList[aIndex][5], 1, 125, "width", "clear");
+			prompt.finish();
+		    }
+		},		 
+		 M({ja: "このファイルを含むフォルダを開く",
+		    en: "Show this file"}),
+		 "show-this-file,c"],
+		[function (aIndex) {
+		    if(collectList[aIndex][0] == "finished") {
+			_dlbar_renameFinished(collectList[aIndex][5]);
+			collectList[aIndex][3] = document.getElementById(collectList[aIndex][5]).getAttribute("name");
+			prompt.refresh();
+		    }
+		},
+		 M({ja: "リネーム",
+		    en: "Rename this file"}),
+		 "rename-this-file,c"],
+		[function (aIndex) {
+		    if(collectList[aIndex][0] == "finished") {
+			_dlbar_deleteAnimateCont(collectList[aIndex][5]);
+			collectList.splice(aIndex, 1);
+			if(collectList.length > 0) {
+			    prompt.refresh();
+			}
+			else
+			    prompt.finish();
+		    }
+		},
+		 M({ja: "このファイルを削除",
+		    en:"Delete this file"}),
+		 "delete-this-file,c"],
+		[function (aIndex) {
+		    if(collectList[aIndex][0] == "finished") {
+			_dlbar_clearAnimate(collectList[aIndex][5], 1, 125, "width", "clear");
+			collectList.splice(aIndex, 1);
+			if(collectList.length > 0)
+			    prompt.refresh();
+			else
+			    prompt.finish();
+		    }
+		},
+		 M({ja: "このファイルをステータスバーから取り除く",
+		    en: "Clear this file"}),
+		 "clear-this-file,c"],
+		[function (aIndex) {
+		    if(collectList[aIndex][0] == "in progress" || collectList[aIndex][0] == "pause") {
+			_dlbar_cancelprogress(collectList[aIndex][5]);			
+			collectList.splice(aIndex, 1);
+			if(collectList.length > 0)
+			    prompt.refresh();
+			else
+			    prompt.finish();
+		    }
+		},
+		 M({ja: "ダウンロードのキャンセル",
+		    en: "Cancel this file"}),
+		 "cancel-this-file,c"],
+		[function (aIndex) {
+		    if(collectList[aIndex][0] == "in progress") {
+			_dlbar_pause(collectList[aIndex][5]);
+			collectList[aIndex][0] = "pause";
+			prompt.refresh();
+		    }
+		},
+		 M({ja: "一時停止",
+		    en: "Pause this file"}),
+		 "pause-this-file,c"],
+		[function (aIndex) {
+		    if(collectList[aIndex][0] == "pause") {
+			_dlbar_resume(collectList[aIndex][5]);
+			collectList[aIndex][0] = "in progress";
+		    }
+		},
+		 M({ja: "ダウンロードの再開",
+		    en: "Resume this file"}),
+		 "resume-this-file,c"],
+		[function (aIndex) {
+		    _dlbar_copyURL(collectList[aIndex][5]);
+		},
+		 M({ja: "URL のコピー",
+		    en: "Copy url"}),
+		 "copy-url"],
+		[function (aIndex) {
+		    _dlbar_visitRefWebsite(collectList[aIndex][5]);
+		},
+		 M({ja: "ソールのウェブサイトを訪れる",
+		    en: "Visit ref website"}),
+		 "visit-ref-website"],
+		[function (aIndex) {
+		    _dlbar_undoClear();
+		    showFileList();
+		},
+		 M({ja: "クリアのやり直し",
+		    en: "Undo clear"}),
+		 "undo-clear"],
+		[function (aIndex) {
+		    showFileList();
+		},
+		 M({ja: "リストの更新",
+		    en: "Refresh file list"}),
+		 "refresh-file-list"]
+	    ],
 	    stylist : function (args, n, current) {
-		if (current !== collectList)
+		if (current !== collectList || (n !== 0 && n !== 1))
 		    return null;
 		let stateOption = args[0] + "_style";
 
 		let stateStyle = stateOption in pOptions ? pOptions[stateOption] : pOptions["default_style"];
 
-		let style = [stateStyle, pOptions["name_style"], pOptions["source_style"]];
-
-		return style;
-	    },
-	     */
-	    callback : function (i) {
-		if(i >= 0 & collectList[i][0] == "finished") {
-		    _dlbar_startOpenFinished(fileList[i].id);
-		    return void display.echoStatusBar("Opening " + document.getElementById(collectList[i].id).getAttribute("name"));
-		}
+		return stateStyle;
 	    }
 	});    
 }
@@ -288,7 +468,7 @@ function showAllActions(aEvent, aArg) {
 	}
 
 	if(count != 0) {
-    	    actionList.push([allActions[i][2], count + " files", allActions[i][1]]);
+    	    actionList.push([allActions[i][2], count + " files", allActions[i][1], getState(targetList[0])]);
 	    dispList.push(i);
 	}
     }
@@ -300,10 +480,21 @@ function showAllActions(aEvent, aArg) {
     	{
     	    message : "All Actions",
     	    collection : actionList,
+	    flags: [0, 0, 0, HIDDEN],
     	    header : ["Name", "Target", "Description"],
     	    width : [15, 15, 70],
-	    keymap: pOptions["key_map"],
-	    style: [pOptions["command_style"], pOptions["file_style"], pOptions["description_style"]],
+	    keymap: pOptions["action_key_map"],
+	    style: ["", pOptions["file_style"], pOptions["description_style"]],	    
+	    stylist : function (args, n, current) {
+		if (current !== actionList || n !== 0)
+		    return null;
+
+		let targetState = args[3] + "_style";
+
+		let sty = targetState in pOptions ? pOptions[targetState] : pOptions["default_style"];
+
+		return sty;
+	    },	     
     	    callback : function (i) {
     		if (i >= 0) {
     		    allActions[dispList[i]][0]();
@@ -316,41 +507,51 @@ function showAllActions(aEvent, aArg) {
 // Add exts {{ ============================================================== //
 ext.add("dlbsnail-show-file-list", function() {
     showFileList();
-}, "Show File List");
+}, M({ja: "ファイルリストの表示",
+      en: "Show File List"}));
 
 ext.add("dlbsnail-all-clear", function () {
     allActions[0][0]();
-}, "Download Statusbar All Clear");
+}, M({ja: "ダウンロード完了したファイルをすべてクリア",
+      en: "Download Statusbar All Clear"}));
 
 ext.add("dlbsnail-all-pause", function () {
     allActions[1][0]();
-}, "Download Statusbar All Pause");
+}, M({ja: "進行途中のファイルをすべて一時停止",
+      en: "Download Statusbar All Pause"}));
 
 ext.add("dlbsnail-all-resume", function () {
     allActions[2][0]();
-}, "Download Statusbar All Resume");
+}, M({ja: "一時停止中のファイルをすべて再開",
+      en: "Download Statusbar All Resume"}));
 
 ext.add("dlbsnail-all-cancel", function () {
     allActions[3][0]();
-}, "Download Statusbar All Cancel");
+}, M({ja: "進行途中のファイルをすべてキャンセル",
+      en: "Download Statusbar All Cancel"}));
 
 ext.add("dlbsnail-all-open", function () {
     allActions[4][0]();
-}, "Download Statusbar All Open");
+}, M({ja: "ダウンロード完了したファイルをすべて開く",
+      en: "Download Statusbar All Open"}));
 
 ext.add("dlbsnail-show-command-for-all", function () {
     showAllActions();
-}, "Show Commands for All items");
+}, M({ja: "全体操作のコマンド一覧",
+      en: "Show Commands for All items"}));
 
 ext.add("dlbsnail-toggle-mode", function() {
     _dlbar_modeToggle();
-}, "Toggle Download Statusbar Mode");
+}, M({ja: "ミニモードのトグル",
+      en: "Toggle Download Statusbar Mode"}));
 
 ext.add("dlbsnail-open-preference", function() {
     window.open('chrome://downbar/content/downbarprefs.xul');
-}, "Open Download Statusbar preference");
+}, M({ja: "Download Statusbar の設定を開く",
+      en: "Open Download Statusbar preference"}));
 
 ext.add("dlbsnail-open-history", function() {
     _dlbar_openDownloadWindow();
-}, "Open Download History");
+}, M({ja: "ダウンロード履歴を見る",
+      en: "Open Download History"}));
 // }} ======================================================================= //
