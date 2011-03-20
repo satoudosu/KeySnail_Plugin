@@ -2,7 +2,7 @@ var PLUGIN_INFO =
 <KeySnailPlugin>
     <name>dlbsnail</name>
     <description>Work with Download Statusbar</description>
-    <version>0.2.1</version>
+    <version>0.2.2</version>
     <updateURL>http://github.com/satoudosu/KeySnail_Plugin/raw/master/dlbsnail.ks.js</updateURL>
     <author>satoudosu</author>
     <license document="http://www.opensource.org/licenses/mit-license.php">The MIT License</license>
@@ -100,6 +100,11 @@ key.setViewKey('D', function (ev, arg) {
 </KeySnailPlugin>;
 
 // ChangeLog
+// 
+// ==== 0.2.2(2011/03/19) ====
+// 
+// * fixed refresh bugs
+// 
 // ==== 0.2.1(2011/03/19) ====
 // 
 // * fixed default style
@@ -130,6 +135,8 @@ key.setViewKey('D', function (ev, arg) {
 // 5. プラグインのアイコンの作成
 
 // Options {{ =============================================================== //
+const REFRESHER = null;
+       
 let pOptions = plugins.setupOptions("dlbsnail", {    
     "finished_style"	: { preset: "color:black;" },
     "in progress_style" : { preset: "color:black;" },
@@ -190,6 +197,7 @@ let pOptions = plugins.setupOptions("dlbsnail", {
             "g"     : "prompt-beginning-of-candidates",
             "G"     : "prompt-end-of-candidates",
             "q"     : "prompt-cancel"
+	    // for all action
 	},
 	description: M({
 	    ja: "全体アクション用キーマップ",
@@ -199,6 +207,11 @@ let pOptions = plugins.setupOptions("dlbsnail", {
 }, PLUGIN_INFO);
 
 // }} ======================================================================= //
+function resetRefresher() {
+    window.clearInterval(REFRESHER);
+    REFRESHER = null;
+}
+       
 function allOpen() {
     var downbarelem = getDownbarelem();
     
@@ -312,7 +325,10 @@ function showFileList() {
 	collectList.push([state, currpercent, iconURL, file, source, id]);
     }
 
-    var refresher = window.setInterval(function() {
+    // flag of setInterval
+    var ref = true;
+    
+    REFRESHER = window.setInterval(function() {	
 	var repeatFlag = false;
 	for(var i=0; i<collectList.length; i++) {
 	    if(collectList[i][0] != "finished") {
@@ -327,11 +343,16 @@ function showFileList() {
 	}
 
 	if(!repeatFlag) {
-	    window.clearInterval(refresher);
+	    resetRefresher();
 	    return;
 	}
 
-	prompt.refresh();
+	if(ref)
+	    prompt.refresh();
+	else {
+	    resetRefresher();
+	    return;
+	}
 	
     }, pOptions["interval"]);
 
@@ -460,6 +481,10 @@ function showFileList() {
 		    en: "Refresh file list"}),
 		 "refresh-file-list"]
 	    ],
+	    onFinish: function () {
+		ref = false;
+		resetRefresher();
+	    },
 	    stylist : function (args, n, current) {
 		if (current !== collectList || (n !== 0 && n !== 1))
 		    return null;
