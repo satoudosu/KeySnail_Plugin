@@ -2,7 +2,7 @@ var PLUGIN_INFO =
 <KeySnailPlugin>
     <name>dlbsnail</name>
     <description>Work with Download Statusbar</description>
-    <version>0.2.2</version>
+    <version>0.2.3</version>
     <updateURL>http://github.com/satoudosu/KeySnail_Plugin/raw/master/dlbsnail.ks.js</updateURL>
     <author>satoudosu</author>
     <license document="http://www.opensource.org/licenses/mit-license.php">The MIT License</license>
@@ -101,6 +101,10 @@ key.setViewKey('D', function (ev, arg) {
 
 // ChangeLog
 // 
+// ==== 0.2.3(2011/03/22) ====
+// 
+// * fiexed arround prompt-select-action
+// 
 // ==== 0.2.2(2011/03/19) ====
 // 
 // * fixed refresh bugs
@@ -197,7 +201,6 @@ let pOptions = plugins.setupOptions("dlbsnail", {
             "g"     : "prompt-beginning-of-candidates",
             "G"     : "prompt-end-of-candidates",
             "q"     : "prompt-cancel"
-	    // for all action
 	},
 	description: M({
 	    ja: "全体アクション用キーマップ",
@@ -298,7 +301,7 @@ function getState(stateString) {
     return state;
 }		
 
-function showFileList() {
+function showFileList() {    
     var downbarelem = getDownbarelem();
 
     var fileList = downbarelem.getElementsByAttribute("state", '*');
@@ -347,7 +350,10 @@ function showFileList() {
 	    return;
 	}
 
-	if(ref)
+	if(!isShowingList)
+	    return;
+
+	if(ref)	    
 	    prompt.refresh();
 	else {
 	    resetRefresher();
@@ -356,145 +362,202 @@ function showFileList() {
 	
     }, pOptions["interval"]);
 
-    prompt.selector(
-	{
-	    message : "downloaded items",
-	    acyclic : false,
-	    collection : collectList,
-	    flags : [0, 0, ICON | IGNORE, 0, 0, HIDDEN],
-	    header : ["State", "Percent", "File Name", "Source"],
-	    style : ["", "", pOptions["name_style"], pOptions["source_style"]],
-	    width : [10, 10, 50,  30],
-	    keymap: pOptions["file_key_map"],
-	    actions: [
-		[function (aIndex) {
-		    if(collectList[aIndex][0] == "finished") {
-			_dlbar_startOpenFinished(collectList[aIndex][5]);
-			prompt.finish();
-		    }
-		},		 
-		 M({ja: "このファイルを開く",
-		    en:"Open this file"}),
-		 "open-this-file,c"],
-		[function (aIndex) {
-		    if(collectList[aIndex][0] == "finished") {
-			_dlbar_startShowFile(collectList[aIndex][5]);
-			_dlbar_clearAnimate(collectList[aIndex][5], 1, 125, "width", "clear");
-			prompt.finish();
-		    }
-		},		 
-		 M({ja: "このファイルを含むフォルダを開く",
-		    en: "Show this file"}),
-		 "show-this-file,c"],
-		[function (aIndex) {
-		    if(collectList[aIndex][0] == "finished") {
-			_dlbar_renameFinished(collectList[aIndex][5]);
-			collectList[aIndex][3] = document.getElementById(collectList[aIndex][5]).getAttribute("name");
-			prompt.refresh();
-		    }
-		},
-		 M({ja: "リネーム",
-		    en: "Rename this file"}),
-		 "rename-this-file,c"],
-		[function (aIndex) {
-		    if(collectList[aIndex][0] == "finished") {
-			_dlbar_deleteAnimateCont(collectList[aIndex][5]);
-			collectList.splice(aIndex, 1);
-			if(collectList.length > 0) {
-			    prompt.refresh();
-			}
-			else
-			    prompt.finish();
-		    }
-		},
-		 M({ja: "このファイルを削除",
-		    en:"Delete this file"}),
-		 "delete-this-file,c"],
-		[function (aIndex) {
-		    if(collectList[aIndex][0] == "finished") {
-			_dlbar_clearAnimate(collectList[aIndex][5], 1, 125, "width", "clear");
-			collectList.splice(aIndex, 1);
-			if(collectList.length > 0)
-			    prompt.refresh();
-			else
-			    prompt.finish();
-		    }
-		},
-		 M({ja: "このファイルをステータスバーから取り除く",
-		    en: "Clear this file"}),
-		 "clear-this-file,c"],
-		[function (aIndex) {
-		    if(collectList[aIndex][0] == "in progress" || collectList[aIndex][0] == "pause") {
-			_dlbar_cancelprogress(collectList[aIndex][5]);			
-			collectList.splice(aIndex, 1);
-			if(collectList.length > 0)
-			    prompt.refresh();
-			else
-			    prompt.finish();
-		    }
-		},
-		 M({ja: "ダウンロードのキャンセル",
-		    en: "Cancel this file"}),
-		 "cancel-this-file,c"],
-		[function (aIndex) {
-		    if(collectList[aIndex][0] == "in progress") {
-			_dlbar_pause(collectList[aIndex][5]);
-			collectList[aIndex][0] = "pause";
-			prompt.refresh();
-		    }
-		},
-		 M({ja: "一時停止",
-		    en: "Pause this file"}),
-		 "pause-this-file,c"],
-		[function (aIndex) {
-		    if(collectList[aIndex][0] == "pause") {
-			_dlbar_resume(collectList[aIndex][5]);
-			collectList[aIndex][0] = "in progress";
-		    }
-		},
-		 M({ja: "ダウンロードの再開",
-		    en: "Resume this file"}),
-		 "resume-this-file,c"],
-		[function (aIndex) {
-		    _dlbar_copyURL(collectList[aIndex][5]);
-		},
-		 M({ja: "URL のコピー",
-		    en: "Copy url"}),
-		 "copy-url"],
-		[function (aIndex) {
-		    _dlbar_visitRefWebsite(collectList[aIndex][5]);
-		},
-		 M({ja: "ソールのウェブサイトを訪れる",
-		    en: "Visit ref website"}),
-		 "visit-ref-website"],
-		[function (aIndex) {
-		    _dlbar_undoClear();
-		    showFileList();
-		},
-		 M({ja: "クリアのやり直し",
-		    en: "Undo clear"}),
-		 "undo-clear"],
-		[function (aIndex) {
-		    showFileList();
-		},
-		 M({ja: "リストの更新",
-		    en: "Refresh file list"}),
-		 "refresh-file-list"]
-	    ],
-	    onFinish: function () {
-		ref = false;
-		resetRefresher();
-	    },
-	    stylist : function (args, n, current) {
-		if (current !== collectList || (n !== 0 && n !== 1))
-		    return null;
-		let stateOption = args[0] + "_style";
+    var isShowingList = true;
+    var fileIndex = 0;
+    var actionIndex = 0;
 
-		let stateStyle = stateOption in pOptions ? pOptions[stateOption] : pOptions["default_style"];
-
-		return stateStyle;
+    var promptShiftAction =
+	[function (aIndex) {
+	    if (isShowingList) {
+		isShowingList = false;
+		fileIndex = aIndex;
+		actionContext.initialIndex = actionIndex;
+		prompt.selector(actionContext);
+	    } else {
+		isShowingList = true;
+		actionIndex = aIndex;
+		fileContext.initialIndex = fileIndex;
+		prompt.selector(fileContext);
 	    }
-	});    
+	},
+	 M({ja: "デフォルトのprompt-select-actionを上書き",
+	    en: "Override prompt-select-action"}),
+	 "prompt-select-action"];
+    
+    var fileActions = [
+	[function (aIndex) {
+	    if(collectList[aIndex][0] == "finished") {
+		_dlbar_startOpenFinished(collectList[aIndex][5]);
+		prompt.finish();
+	    }
+	},		 
+	 M({ja: "このファイルを開く",
+	    en:"Open this file"}),
+	 "open-this-file,c"],
+	[function (aIndex) {
+	    if(collectList[aIndex][0] == "finished") {
+		_dlbar_startShowFile(collectList[aIndex][5]);
+		_dlbar_clearAnimate(collectList[aIndex][5], 1, 125, "width", "clear");
+		prompt.finish();
+	    }
+	},		 
+	 M({ja: "このファイルを含むフォルダを開く",
+	    en: "Show this file"}),
+	 "show-this-file,c"],
+	[function (aIndex) {
+	    if(collectList[aIndex][0] == "finished") {
+		_dlbar_renameFinished(collectList[aIndex][5]);
+		collectList[aIndex][3] = document.getElementById(collectList[aIndex][5]).getAttribute("name");
+		if(isShowingList)
+		    prompt.refresh();
+	    }
+	},
+	 M({ja: "リネーム",
+	    en: "Rename this file"}),
+	 "rename-this-file,c"],
+	[function (aIndex) {
+	    if(collectList[aIndex][0] == "finished") {
+		_dlbar_deleteAnimateCont(collectList[aIndex][5]);
+		collectList.splice(aIndex, 1);
+		if(collectList.length > 0) {
+		    if(isShowingList)
+			prompt.refresh();
+		}
+		else
+		    prompt.finish();
+	    }
+	},
+	 M({ja: "このファイルを削除",
+	    en:"Delete this file"}),
+	 "delete-this-file,c"],
+	[function (aIndex) {
+	    if(collectList[aIndex][0] == "finished") {
+		_dlbar_clearAnimate(collectList[aIndex][5], 1, 125, "width", "clear");
+		collectList.splice(aIndex, 1);
+		if(collectList.length > 0)
+		    if(isShowingList)
+			prompt.refresh();
+		else
+		    prompt.finish();
+	    }
+	},
+	 M({ja: "このファイルをステータスバーから取り除く",
+	    en: "Clear this file"}),
+	 "clear-this-file,c"],
+	[function (aIndex) {
+	    if(collectList[aIndex][0] == "in progress" || collectList[aIndex][0] == "pause") {
+		_dlbar_cancelprogress(collectList[aIndex][5]);			
+		collectList.splice(aIndex, 1);
+		if(collectList.length > 0)
+		    if(isShowingList)
+			prompt.refresh();
+		else
+		    prompt.finish();
+	    }
+	},
+	 M({ja: "ダウンロードのキャンセル",
+	    en: "Cancel this file"}),
+	 "cancel-this-file,c"],
+	[function (aIndex) {
+	    if(collectList[aIndex][0] == "in progress") {
+		_dlbar_pause(collectList[aIndex][5]);
+		collectList[aIndex][0] = "pause";
+		if(isShowingList)
+		    prompt.refresh();
+	    }
+	},
+	 M({ja: "一時停止",
+	    en: "Pause this file"}),
+	 "pause-this-file,c"],
+	[function (aIndex) {
+	    if(collectList[aIndex][0] == "pause") {
+		_dlbar_resume(collectList[aIndex][5]);
+		collectList[aIndex][0] = "in progress";
+	    }
+	},
+	 M({ja: "ダウンロードの再開",
+	    en: "Resume this file"}),
+	 "resume-this-file,c"],
+	[function (aIndex) {
+	    _dlbar_copyURL(collectList[aIndex][5]);
+	},
+	 M({ja: "URL のコピー",
+	    en: "Copy url"}),
+	 "copy-url"],
+	[function (aIndex) {
+	    _dlbar_visitRefWebsite(collectList[aIndex][5]);
+	},
+	 M({ja: "ソースのウェブサイトを訪れる",
+	    en: "Visit ref website"}),
+	 "visit-ref-website"],
+	[function (aIndex) {
+	    _dlbar_undoClear();
+	    showFileList();
+	},
+	 M({ja: "クリアのやり直し",
+	    en: "Undo clear"}),
+	 "undo-clear"],
+	[function (aIndex) {
+	    showFileList();
+	},
+	 M({ja: "リストの更新",
+	    en: "Refresh file list"}),
+	 "refresh-file-list"],
+	promptShiftAction
+    ];
+
+    var actionCollection = [];
+    for(i = 0; i<fileActions.length-1; i++) {
+	actionCollection.push((i+1) + ". " + fileActions[i][1]);
+    }
+
+    var fileContext = {
+	message : "downloaded items ",
+	acyclic : false,
+	collection : collectList,
+	flags : [0, 0, ICON | IGNORE, 0, 0, HIDDEN],
+	header : ["State", "Percent", "File Name", "Source"],
+	style : ["", "", pOptions["name_style"], pOptions["source_style"]],
+	width : [10, 10, 50,  30],
+	keymap: pOptions["file_key_map"],
+	actions: fileActions,	
+	onFinish: function () {
+	    ref = false;
+	    resetRefresher();
+	},
+	stylist : function (args, n, current) {
+	    if (current !== collectList || (n !== 0 && n !== 1))
+		return null;
+	    let stateOption = args[0] + "_style";
+
+	    let stateStyle = stateOption in pOptions ? pOptions[stateOption] : pOptions["default_style"];
+
+	    return stateStyle;
+	}
+    };
+    
+    var actionContext = {
+	message : "pattern: ",
+	collection : actionCollection,
+	header : ["Actions"],
+	style : ["text-decoration: underline;"],
+	keymap : pOptions["action_key_map"],
+	actions : [
+	    [function (aIndex) {
+		fileActions[aIndex][0](fileIndex);
+
+		// 更新以外が呼ばれたら
+		if(aIndex != actionCollection.length -1)
+		    prompt.finish();
+	    },
+	     M({ja: "アクションの実行",
+		en: "execute this action"}),
+	     "execute-this-action"],
+	    promptShiftAction
+	]
+    };
+
+    prompt.selector(fileContext);    
 }
 
 function showAllActions(aEvent, aArg) {
