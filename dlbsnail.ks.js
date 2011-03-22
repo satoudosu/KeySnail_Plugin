@@ -2,7 +2,7 @@ var PLUGIN_INFO =
 <KeySnailPlugin>
     <name>dlbsnail</name>
     <description>Work with Download Statusbar</description>
-    <version>0.2.3</version>
+    <version>0.2.4</version>
     <updateURL>http://github.com/satoudosu/KeySnail_Plugin/raw/master/dlbsnail.ks.js</updateURL>
     <author>satoudosu</author>
     <license document="http://www.opensource.org/licenses/mit-license.php">The MIT License</license>
@@ -101,9 +101,13 @@ key.setViewKey('D', function (ev, arg) {
 
 // ChangeLog
 // 
+// ==== 0.2.4(2011/03/22) ====
+// 
+// * fixed a little bug
+// 
 // ==== 0.2.3(2011/03/22) ====
 // 
-// * fiexed arround prompt-select-action
+// * fixed arround prompt-select-action
 // 
 // ==== 0.2.2(2011/03/19) ====
 // 
@@ -209,12 +213,7 @@ let pOptions = plugins.setupOptions("dlbsnail", {
     }
 }, PLUGIN_INFO);
 
-// }} ======================================================================= //
-function resetRefresher() {
-    window.clearInterval(REFRESHER);
-    REFRESHER = null;
-}
-       
+// }} ======================================================================= //       
 function allOpen() {
     var downbarelem = getDownbarelem();
     
@@ -326,45 +325,35 @@ function showFileList() {
 	var iconURL = "moz-icon:" + dlElem.getAttribute("target") + "?size=32&contentType=" + contentType;
 
 	collectList.push([state, currpercent, iconURL, file, source, id]);
-    }
+    }   
 
-    // flag of setInterval
     var ref = true;
-    
-    REFRESHER = window.setInterval(function() {	
-	var repeatFlag = false;
-	for(var i=0; i<collectList.length; i++) {
-	    if(collectList[i][0] != "finished") {
-		repeatFlag = true;
-
-		var newPercent = _dlbar_gDownloadManager.getDownload(collectList[i][5].substring(3)).percentComplete;
-		collectList[i][1] = newPercent + " %";
-
-		if(newPercent == 100)
-		    collectList[i][0] = "finished";
-	    }
-	}
-
-	if(!repeatFlag) {
-	    resetRefresher();
-	    return;
-	}
-
-	if(!isShowingList)
-	    return;
-
-	if(ref)	    
-	    prompt.refresh();
-	else {
-	    resetRefresher();
-	    return;
-	}
-	
-    }, pOptions["interval"]);
-
     var isShowingList = true;
     var fileIndex = 0;
     var actionIndex = 0;
+
+    function makeRefresher() {
+	REFRESHER = window.setTimeout(function() {
+	    var repeatFlag = false;
+	    for(var i=0; i<collectList.length; i++) {
+		if(collectList[i][0] != "finished") {
+		    repeatFlag = true;
+
+		    var newPercent = _dlbar_gDownloadManager.getDownload(collectList[i][5].substring(3)).percentComplete;
+		    collectList[i][1] = newPercent + " %";
+
+		    if(newPercent == 100)
+			collectList[i][0] = "finished";
+		}
+	    }
+
+
+	    if(ref && repeatFlag) {	    
+		prompt.refresh();
+		makeRefresher();
+	    }
+	}, pOptions["interval"]);
+    }
 
     var promptShiftAction =
 	[function (aIndex) {
@@ -377,6 +366,8 @@ function showFileList() {
 		isShowingList = true;
 		actionIndex = aIndex;
 		fileContext.initialIndex = fileIndex;
+		ref = true;
+		makeRefresher();
 		prompt.selector(fileContext);
 	    }
 	},
@@ -511,6 +502,8 @@ function showFileList() {
 	actionCollection.push((i+1) + ". " + fileActions[i][1]);
     }
 
+    makeRefresher();
+
     var fileContext = {
 	message : "downloaded items ",
 	acyclic : false,
@@ -523,7 +516,6 @@ function showFileList() {
 	actions: fileActions,	
 	onFinish: function () {
 	    ref = false;
-	    resetRefresher();
 	},
 	stylist : function (args, n, current) {
 	    if (current !== collectList || (n !== 0 && n !== 1))
