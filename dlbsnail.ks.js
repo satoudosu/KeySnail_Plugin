@@ -2,7 +2,7 @@ var PLUGIN_INFO =
 <KeySnailPlugin>
     <name>dlbsnail</name>
     <description>Work with Download Statusbar</description>
-    <version>0.2.4</version>
+    <version>0.2.5</version>
     <updateURL>http://github.com/satoudosu/KeySnail_Plugin/raw/master/dlbsnail.ks.js</updateURL>
     <iconURL>http://github.com/satoudosu/KeySnail_Plugin/raw/master/dlbsnail.png</iconURL>
     <author>satoudosu</author>
