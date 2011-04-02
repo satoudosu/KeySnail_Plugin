@@ -4,6 +4,7 @@ var PLUGIN_INFO =
     <description>Work with Download Statusbar</description>
     <version>0.2.4</version>
     <updateURL>http://github.com/satoudosu/KeySnail_Plugin/raw/master/dlbsnail.ks.js</updateURL>
+    <iconURL>http://github.com/satoudosu/KeySnail_Plugin/raw/master/dlbsnail.png</iconURL>
     <author>satoudosu</author>
     <license document="http://www.opensource.org/licenses/mit-license.php">The MIT License</license>
     <license lang="ja">MIT ライセンス</license>
@@ -94,12 +95,19 @@ key.setViewKey('D', function (ev, arg) {
 }, 'dlbasnail-all系コマンド', true);
 ||<
 
-また上記の設定を行うことで，ブラウズ画面において D キーを押すことで実行可能な全体操作を一覧で表示し，選択することで実行することもできます．       
+また上記の設定を行うことで，ブラウズ画面において D キーを押すことで実行可能な全体操作を一覧で表示し，選択することで実行することもできます．
+
+=== 謝辞 ===
+
+http://www.iconarchive.com のアイコンをベースに使わせて頂きました．
 	
     ]]></detail>
 </KeySnailPlugin>;
 
 // ChangeLog
+// ==== 0.2.5(2011/04/03) ====
+// 
+// * little improve and icon added
 // 
 // ==== 0.2.4(2011/03/22) ====
 // 
@@ -140,7 +148,7 @@ key.setViewKey('D', function (ev, arg) {
 // 
 // 4. 逐次的な更新(promptの仕様上無理な気がする) -> 力づくで対応しました
 // 
-// 5. プラグインのアイコンの作成
+// 5. プラグインのアイコンの作成 -> 対応しました
 
 // Options {{ =============================================================== //
 const REFRESHER = null;
@@ -300,7 +308,7 @@ function getState(stateString) {
     return state;
 }		
 
-function showFileList() {    
+function showFileList(index) {    
     var downbarelem = getDownbarelem();
 
     var fileList = downbarelem.getElementsByAttribute("state", '*');
@@ -329,7 +337,7 @@ function showFileList() {
 
     var ref = true;
     var isShowingList = true;
-    var fileIndex = 0;
+    var fileIndex = index ? index : 0;
     var actionIndex = 0;
 
     function makeRefresher() {
@@ -346,9 +354,8 @@ function showFileList() {
 			collectList[i][0] = "finished";
 		}
 	    }
-
-
-	    if(ref && repeatFlag) {	    
+	    
+	    if(ref && repeatFlag) {
 		prompt.refresh();
 		makeRefresher();
 	    }
@@ -401,7 +408,7 @@ function showFileList() {
 		collectList[aIndex][3] = document.getElementById(collectList[aIndex][5]).getAttribute("name");
 		if(isShowingList)
 		    prompt.refresh();
-	    }
+	    }	     
 	},
 	 M({ja: "リネーム",
 	    en: "Rename this file"}),
@@ -483,13 +490,13 @@ function showFileList() {
 	 "visit-ref-website"],
 	[function (aIndex) {
 	    _dlbar_undoClear();
-	    showFileList();
+	    showFileList(aIndex);
 	},
 	 M({ja: "クリアのやり直し",
 	    en: "Undo clear"}),
 	 "undo-clear"],
 	[function (aIndex) {
-	    showFileList();
+	     showFileList(aIndex);
 	},
 	 M({ja: "リストの更新",
 	    en: "Refresh file list"}),
@@ -513,7 +520,8 @@ function showFileList() {
 	style : ["", "", pOptions["name_style"], pOptions["source_style"]],
 	width : [10, 10, 50,  30],
 	keymap: pOptions["file_key_map"],
-	actions: fileActions,	
+	actions: fileActions,
+	initialIndex: fileIndex,
 	onFinish: function () {
 	    ref = false;
 	},
