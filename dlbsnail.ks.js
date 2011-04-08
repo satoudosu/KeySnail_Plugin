@@ -105,6 +105,10 @@ http://www.iconarchive.com のアイコンをベースに使わせて頂きま�
 </KeySnailPlugin>;
 
 // ChangeLog
+// ==== 0.2.6(2011/04/09) ====
+// 
+// * bug fix
+// 
 // ==== 0.2.5(2011/04/03) ====
 // 
 // * little improve and icon added
@@ -308,7 +312,7 @@ function getState(stateString) {
     return state;
 }		
 
-function showFileList(index) {    
+function showFileList(index, input) {    
     var downbarelem = getDownbarelem();
 
     var fileList = downbarelem.getElementsByAttribute("state", '*');
@@ -338,6 +342,7 @@ function showFileList(index) {
     var ref = true;
     var isShowingList = true;
     var fileIndex = index ? index : 0;
+    var initialInput = input ? input : "";
     var actionIndex = 0;
 
     function makeRefresher() {
@@ -356,8 +361,10 @@ function showFileList(index) {
 	    }
 	    
 	    if(ref && repeatFlag) {
-		prompt.refresh();
-		makeRefresher();
+		// prompt.refresh();
+		// makeRefresher();
+		prompt.finish(true);
+		showFileList(fileIndex, initialInput);
 	    }
 	}, pOptions["interval"]);
     }
@@ -366,13 +373,14 @@ function showFileList(index) {
 	[function (aIndex) {
 	    if (isShowingList) {
 		isShowingList = false;
-		fileIndex = aIndex;
+		fileIndex = aIndex;		
 		actionContext.initialIndex = actionIndex;
 		prompt.selector(actionContext);
 	    } else {
 		isShowingList = true;
 		actionIndex = aIndex;
 		fileContext.initialIndex = fileIndex;
+		fileContext.initialInput = initialInput;
 		ref = true;
 		makeRefresher();
 		prompt.selector(fileContext);
@@ -522,6 +530,11 @@ function showFileList(index) {
 	keymap: pOptions["file_key_map"],
 	actions: fileActions,
 	initialIndex: fileIndex,
+	initialInput: initialInput,
+	onChange: function (arg) {
+	    fileIndex = arg.index;
+	    initialInput = arg.textbox.value;
+	},
 	onFinish: function () {
 	    ref = false;
 	},
